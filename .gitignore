@@ -162,5 +162,5 @@ cython_debug/
 .idea/
 
 # User-specific files
-.db
-.exe
+*.db
+*.exe

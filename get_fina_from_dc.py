@@ -2,14 +2,29 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time
+import platform
 import datetime
 from io import StringIO
 import sqlite3
 import pandas as pd
 from constants import finance_indicator_names
 import tushare as ts
+from apscheduler.schedulers.blocking import BlockingScheduler
 from utils import delete_data_from_db
 
+
+def get_chormedriver_path():
+    os_name = platform.system()
+    if os_name.lower() == 'windows':
+        path = r"D:\newocr\chromedriver-win64\chromedriver.exe"
+    elif os_name.lower() == 'linux':
+        path = r"./chromedriver-win64/chromedriver_linux"
+    else:
+        raise Exception("当前操作系统不支持")
+    return path
+
+
+executable_path = get_chormedriver_path()
 
 pro = ts.pro_api("f88e93f91c79cdb865f22f40cac23a2907da36b53fa9aa150228ed27")
 # Setting up the webdriver
@@ -17,7 +32,7 @@ pro = ts.pro_api("f88e93f91c79cdb865f22f40cac23a2907da36b53fa9aa150228ed27")
 chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
-service = webdriver.ChromeService(executable_path=r"D:\newocr\chromedriver-win64\chromedriver.exe",)
+service = webdriver.ChromeService(executable_path=executable_path)
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
 # Connecting to the database
@@ -238,7 +253,7 @@ def get_data_by_date():
         data = pro.disclosure_date(end_date=end_date)
         # 筛选出今天之前3天和今天之后3天的披露情况
         data = data[(data["pre_date"] >= pre_day_str) & (data["pre_date"] <= next_day_str)]
-        ts_codes = data["ts_code"].tolist()
+        # ts_codes = data["ts_code"].tolist()
         # 在此范围内存在披露的股票，逐个获取最新财报数据
         for index,row in data.iterrows():
             print(row["ts_code"])
@@ -250,4 +265,7 @@ def get_data_by_date():
 
 
 if __name__ == '__main__':
-    get_data_by_date()
+    schedule = BlockingScheduler()
+    schedule.add_job(get_data_by_date, 'interval', days=1, id='my_job_id')
+    schedule.start()
+    # print(get_chormedriver_path())
