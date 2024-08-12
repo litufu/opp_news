@@ -7,6 +7,7 @@ import datetime
 from io import StringIO
 import sqlite3
 import pandas as pd
+import logging
 from constants import finance_indicator_names
 import tushare as ts
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -18,7 +19,7 @@ def get_chormedriver_path():
     if os_name.lower() == 'windows':
         path = r"D:\newocr\chromedriver-win64\chromedriver.exe"
     elif os_name.lower() == 'linux':
-        path = r"./chromedriver-win64/chromedriver_linux"
+        path = r"/home/litufu/opp_news/chromedriver-win64/chromedriver"
     else:
         raise Exception("当前操作系统不支持")
     return path
@@ -37,9 +38,7 @@ driver = webdriver.Chrome(service=service, options=chrome_options)
 
 # Connecting to the database
 
-conn = sqlite3.connect('fina.db')
-
-
+conn = sqlite3.connect('fina.db', check_same_thread=False)
 
 
 
@@ -265,7 +264,8 @@ def get_data_by_date():
 
 
 if __name__ == '__main__':
+    logging.basicConfig()
     schedule = BlockingScheduler()
-    schedule.add_job(get_data_by_date, 'interval', days=1, id='my_job_id')
+    schedule.add_job(get_data_by_date, 'cron', hour='20', id='my_job_id')
     schedule.start()
     # print(get_chormedriver_path())

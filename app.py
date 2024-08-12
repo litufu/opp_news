@@ -5,7 +5,8 @@ import sqlite3
 
 conn = sqlite3.connect('fina.db')
 data = pd.read_sql("SELECT * FROM quarter_revenue_increase limit 100", conn)
-data.sort_values(by=["pre_date",'yoy_total_operating_revenue'], inplace=True, ascending=False)
+data.sort_values(by=["pre_date",'yoy_tot'
+                                'al_operating_revenue'], inplace=True, ascending=False)
 res = data.to_dict(orient='split')
 
 
@@ -17,4 +18,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=False, host='0.0.0.0', portdc000)
